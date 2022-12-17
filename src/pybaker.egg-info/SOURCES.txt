@@ -2,6 +2,8 @@ LICENSE
 README.md
 pyproject.toml
 setup.cfg
+src/pybaker/__init__.py
+src/pybaker/pybaker.py
 src/pybaker.egg-info/PKG-INFO
 src/pybaker.egg-info/SOURCES.txt
 src/pybaker.egg-info/dependency_links.txt
