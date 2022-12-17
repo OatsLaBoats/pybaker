@@ -1,0 +1,74 @@
+Metadata-Version: 2.1
+Name: pybaker
+Version: 1.0.0
+Summary: A build system library
+Home-page: https://github.com/OatsLaBoats/pybaker
+Author: oats
+Author-email: chadriven12345@gmail.com
+Project-URL: Bug Tracker, https://github.com/OatsLaBoats/pybaker/issues
+Project-URL: repository, https://github.com/OatsLaBoats/pybaker
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Software Development :: Build Tools
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+
+# 🥧pybaker🥧
+
+Pybaker is an easy to use flexible build system, provided as a python library. Born from my frustrations with existing build systems.
+
+The library provides a Builder object and also allows you to create your own compiler, linker, dependency scanner and language configuration.
+It comes with a few Premade configurations but I would recomend using the clang configuration.
+
+Install it from pip.
+
+Example build script:
+
+``` Python
+# If clang is installed this will just work.
+
+from pybaker import *
+
+
+def build():
+    builder = Builder("test", build_type=BuildType.DEBUG)
+
+    # To see how to implement a language configuration check out 
+    # the Languages class.
+    builder.add_language(Languages.C)
+
+    builder.add_path("src")
+
+    if builder.build():
+        # Do something on failure...
+        pass
+
+    if builder.link(["-lUser32.lib", "-lGdi32.lib"]):
+        # Do something on failure...
+        pass
+
+
+if __name__ == "__main__":
+    build()
+```
+
+To run it you simply call from your base directory  
+
+``` shell
+python build.py 
+```
+
+This will create a new directory where it will dump its private files. A well as the build results.  
+
+The MIT License (MIT)
+
+Copyright © 2022 oatslaboats
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
