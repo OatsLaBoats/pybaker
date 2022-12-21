@@ -737,9 +737,18 @@ class Builder:
         self.add_source_path(sp)
 
 
-    def add_source(self, path: str, flags: list[str] = None) -> None:
-        self.add_source_path(SourcePath(files=[path], flags=flags))
+    def add_source(self, file: str, flags: list[str] = None) -> None:
+        self.add_source_path(SourcePath(files=[file], flags=flags))
 
+
+    def add_paths(self, paths: list[str], flags: list[str] = None) -> None:
+        for path in paths:
+            self.add_path(path, flags)
+        
+    
+    def add_sources(self, files: list[str], flags: list[str] = None) -> None:
+        self.add_source_path(SourcePath(files=files, flags=flags))
+    
 
     def build(self) -> bool:
         """Builds the project. If the build fails it returns True."""
@@ -790,6 +799,13 @@ class Builder:
 
     def clean_all(self) -> None:
         shutil.rmtree(self._build_path)
+
+
+    def run_output(self, params: list[str] = None) -> int:
+        if params == None:
+            params = []
+        
+        return subprocess.run([f"{self._output_path}{SLASH}{self._project_name}{EXECUTABLE_EXTENSION}"] + params).returncode
 
 
     def _build_source_path(self, path: SourcePath) -> None:
