@@ -555,7 +555,7 @@ class DependencyScanner_C(DependencyScanner):
         if len(tokens) < 2:
             return None
 
-        if tokens[0] != "#include" and not tokens[1].startswith("\""):
+        if tokens[0] != "#include" or not tokens[1].startswith("\""):
             return None
 
         # Get the path of the source file.
@@ -582,7 +582,7 @@ class DependencyScanner_CPP(DependencyScanner):
         if len(tokens) < 2:
             return None
 
-        if tokens[0] != "#include" and not tokens[1].startswith("\""):
+        if tokens[0] != "#include" or not tokens[1].startswith("\""):
             return None
 
         path = file[:file.rfind(SLASH)]
@@ -1178,7 +1178,7 @@ class Builder:
             lines = f.readlines()
             for line in lines:
                 dep = lang.scanner.scan(file, line)
-                if dep is None or dep in result or not os.path.exists(dep):
+                if dep is None or dep in result or not os.path.exists(dep) or not os.path.isfile(dep):
                     continue
 
                 result.add(dep)
