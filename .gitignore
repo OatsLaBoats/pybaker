@@ -1,4 +1,5 @@
 __pycache__
-tests/
 dist/
 pybaker.egg-info/
+build
+.mypy_cache
