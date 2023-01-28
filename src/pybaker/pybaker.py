@@ -4,9 +4,8 @@ import pickle
 import platform
 import datetime
 import shutil
-import concurrent.futures.thread as futh
-import concurrent.futures as futures
-
+import threading
+import time
 
 OS = platform.system()
 
@@ -55,6 +54,7 @@ class DependencyScanner:
         """
         Scans a line of text for an import statement.
         """
+
         return None
 
 
@@ -72,14 +72,21 @@ class Compiler:
         if self.flags is None:
             self.flags: list[str] = []
 
+
+    def message(self, output_dir: str, output_name: str, source_file: str, build_type: str, flags: list[str], precent: float) -> None:
+        """Prints a message before the compile method is called."""
+
+        _print_compile_message(build_type, source_file, precent)
+
     
-    def compile_file(self, output_dir: str, output_name: str, source_file: str, build_type: str, flags: list[str], prec: float) -> bool:
+    def compile(self, output_dir: str, output_name: str, source_file: str, build_type: str, flags: list[str]) -> bool:
         """
         Compiles a source file into an object file.\n
         build_type is a parameter that is normally provided by the 'BuildType' class. But if you wish any string can be passed.\n
         Returns False on success and True on failure.
         """
-        print("[Error]: 'compile_file' is not implemented")
+
+        print("[Error]: 'compile' is not implemented")
         return True
     
 
@@ -98,13 +105,13 @@ class Linker:
             self.flags: list[str] = []
 
 
-    # Returns True on failure
     def link(self, output_dir: str, output_name: str, build_type: str, objects: list[str], flags: list[str]) -> bool:
         """
         Links the object files into an executable or what ever else you defined.\n
         build_type is a parameter that is normally provided by the 'BuildType' class. But if you wish any string can be passed.\n
         Returns False on success and True on failure.
         """
+
         print("[Error]: 'link' is not implemented")
         return True
 
@@ -129,31 +136,61 @@ class Language:
 
 
     def set_extension(self, file_exension: str):
+        """
+        Changes the language file extension to \"file_extension\".\n
+        Returns the modified language.
+        """
+
         self.file_extentions = set([file_exension])
         return self
     
     
     def set_extensions(self, file_extensions: set[str]):
+        """
+        Changes the language file extensions to \"file_extensions\".\n
+        Returns the modified language.
+        """
+
         self.file_extentions = file_extensions
         return self
 
     
     def add_extension(self, file_extension: str):
+        """
+        Adds a new language file extension to the existing ones.\n
+        Returns the modified language.
+        """
+
         self.file_extentions.add(file_extension)
         return self
 
 
     def add_extensions(self, file_extensions: set[str]):
+        """
+        Adds new language file extension to the existing ones.\n
+        Returns the modified language.
+        """
+
         self.file_extentions |= file_extensions
         return self
 
 
     def set_scanner(self, scanner: DependencyScanner):
+        """
+        Changes the language dependency scanner.\n
+        Returns the modified language.
+        """
+
         self.scanner = scanner
         return self
 
 
     def set_compiler(self, compiler: Compiler):
+        """
+        Changes the language compiler.\n
+        Returns the modified language.
+        """
+
         self.compiler = compiler
         return self
 
@@ -613,7 +650,11 @@ class Compiler_Invalid(Compiler):
         super().__init__(flags)
     
 
-    def compile_file(self, output_dir: str, output_name: str, source_file: str, build_type: str, flags: list[str], prec: float) -> bool:
+    def message(self, output_dir: str, output_name: str, source_file: str, build_type: str, flags: list[str], precent: float) -> None:
+        pass
+
+
+    def compile(self, output_dir: str, output_name: str, source_file: str, build_type: str, flags: list[str]) -> bool:
         print("[Error]: Could not find a compiler automatically.")
         return False
 
@@ -623,12 +664,10 @@ class Compiler_Clang(Compiler):
         super().__init__(flags)
 
 
-    def compile_file(self, output_dir: str, output_name: str, source_file: str, build_type: str, flags: list[str], prec: float) -> bool:
+    def compile(self, output_dir: str, output_name: str, source_file: str, build_type: str, flags: list[str]) -> bool:
         output = f"{output_dir}{SLASH}{output_name}"
         common = ["-c"]
         params = common + self.flags + flags
-
-        _print_compile_message(build_type, source_file, prec)
 
         match build_type:
             case BuildType.DEBUG:
@@ -648,12 +687,10 @@ class Compiler_Clangpp(Compiler):
         super().__init__(flags)
     
 
-    def compile_file(self, output_dir: str, output_name: str, source_file: str, build_type: str, flags: list[str], prec: float) -> bool:
+    def compile(self, output_dir: str, output_name: str, source_file: str, build_type: str, flags: list[str]) -> bool:
         output = f"{output_dir}{SLASH}{output_name}"
         common = ["-c"]
         params = common + self.flags + flags
-
-        _print_compile_message(build_type, source_file, prec)
 
         match build_type:
             case BuildType.DEBUG:
@@ -673,12 +710,10 @@ class Compiler_GCC(Compiler):
         super().__init__(flags)
 
 
-    def compile_file(self, output_dir: str, output_name: str, source_file: str, build_type: str, flags: list[str], prec: float) -> bool:
+    def compile(self, output_dir: str, output_name: str, source_file: str, build_type: str, flags: list[str]) -> bool:
         output = f"{output_dir}{SLASH}{output_name}"
         common = ["-c"]
         params = common + self.flags + flags
-
-        _print_compile_message(build_type, source_file, prec)
 
         match build_type:
             case BuildType.DEBUG:
@@ -698,12 +733,10 @@ class Compiler_GPP(Compiler):
         super().__init__(flags)
 
 
-    def compile_file(self, output_dir: str, output_name: str, source_file: str, build_type: str, flags: list[str], prec: float) -> bool:
+    def compile(self, output_dir: str, output_name: str, source_file: str, build_type: str, flags: list[str]) -> bool:
         output = f"{output_dir}{SLASH}{output_name}"
         common = ["-c"]
         params = common + self.flags + flags
-
-        _print_compile_message(build_type, source_file, prec)
 
         match build_type:
             case BuildType.DEBUG:
@@ -724,12 +757,10 @@ class Compiler_Microsoft_C(Compiler):
         self.object_extension = ".obj"
 
     
-    def compile_file(self, output_dir: str, output_name: str, source_file: str, build_type: str, flags: list[str], prec: float) -> bool:
+    def compile(self, output_dir: str, output_name: str, source_file: str, build_type: str, flags: list[str]) -> bool:
         output = f"{output_dir}{SLASH}{output_name}"
         common = ["/c"]
         params = common + self.flags + flags
-
-        _print_compile_message(build_type, source_file, prec)
 
         match build_type:
             case BuildType.DEBUG:
@@ -750,12 +781,10 @@ class Compiler_Microsoft_CPP(Compiler):
         self.object_extension = ".obj"
 
    
-    def compile_file(self, output_dir: str, output_name: str, source_file: str, build_type: str, flags: list[str], prec: float) -> bool:
+    def compile(self, output_dir: str, output_name: str, source_file: str, build_type: str, flags: list[str]) -> bool:
         output = f"{output_dir}{SLASH}{output_name}"
         common = ["/c"]
         params = common + self.flags + flags
-
-        _print_compile_message(build_type, source_file, prec)
 
         match build_type:
             case BuildType.DEBUG:
@@ -775,12 +804,10 @@ class Compiler_TCC(Compiler):
         super().__init__(flags)
     
 
-    def compile_file(self, output_dir: str, output_name: str, source_file: str, build_type: str, flags: list[str], prec: float) -> bool:
+    def compile(self, output_dir: str, output_name: str, source_file: str, build_type: str, flags: list[str]) -> bool:
         output = f"{output_dir}{SLASH}{output_name}"
         common = ["-c"]
         params = common + self.flags + flags
-
-        _print_compile_message(build_type, source_file, prec)
 
         match build_type:
             case BuildType.DEBUG:
@@ -1092,7 +1119,7 @@ class Builder:
         return None
 
 
-    def _build(self, files_to_build: list[_SourceFile]) -> None:
+    def _build(self, files: list[_SourceFile]) -> None:
         if self._error:
             return
 
@@ -1100,42 +1127,46 @@ class Builder:
             print("[Error]: Can't build with 0 or less cores")
             self._error = True
             return
+        
+        max_threads = self._cores
+        file_count = 0
+        threads: list[threading.Thread] = []
 
-        with futh.ThreadPoolExecutor(max_workers = self._cores) as e:
-            total_files = len(files_to_build)
-            file_count = 0
+        for f in files:
+            if self._error:
+                break
 
-            chunk: list[_SourceFile] = []
+            while len(threads) == max_threads:
+                # Sleep so we don't consume too many cpu resources. Ironically this increases compilation performance on my cpu.
+                time.sleep(0.05)
 
-            for file in files_to_build:
-                chunk.append(file)
+                for t in list(threads):
+                    if not t.is_alive():
+                        threads.remove(t)
 
-                if len(chunk) == self._cores:
-                    fs: list[futures.Future] = []
-
-                    for i in chunk:
-                        prec = float(file_count) / float(total_files)
-                        fs.append(e.submit(self._build_file, i, prec))
-                        file_count += 1
-
-                    for future in fs:
-                        future.result()
-
-                    chunk.clear()
+            file = f.path
+            flags = f.flags
+            language = f.lang
+            source_filename = file[file.rfind(SLASH) + 1:file.rfind(".")]
+            source_filepath = file[:file.rfind(SLASH)]
+            obj_prefix = source_filepath.replace(SLASH, "_").replace(":", "_") + "_"
             
-            if len(chunk) > 0:
-                fs: list[futures.Future] = []
+            obj_filename = f"{obj_prefix}{source_filename}{language.compiler.object_extension}"
 
-                for i in chunk:
-                    prec = float(file_count) / float(total_files)
-                    fs.append(e.submit(self._build_file, i, prec))
-                    file_count += 1
+            precent = float(file_count) / float(len(files))
+            file_count += 1
 
-                for future in fs:
-                    future.result()
+            language.compiler.message(self._object_path, obj_filename, file, self._build_type, flags, precent)
+
+            t = threading.Thread(target=self._build_file, args=(f, obj_filename))
+            t.start()
+            threads.append(t)
+        
+        for t in threads:
+            t.join()
 
 
-    def _build_file(self, source_file: _SourceFile, prec: float) -> None:
+    def _build_file(self, source_file: _SourceFile, obj_filename: str) -> None:
         if self._error:
             return
 
@@ -1143,17 +1174,12 @@ class Builder:
         flags = source_file.flags
         language = source_file.lang
 
-        source_filename = file[file.rfind(SLASH) + 1:file.rfind(".")]
-        source_filepath = file[:file.rfind(SLASH)]
-
         flag_str = " ".join(flags)
-
-        obj_prefix = source_filepath.replace(SLASH, "_").replace(":", "_") + "_"
-        obj_filename = f"{obj_prefix}{source_filename}{language.compiler.object_extension}"
-
-        if language.compiler.compile_file(self._object_path, obj_filename, file, self._build_type, flags, prec):
-                self._error = True
-                return
+        
+        err = language.compiler.compile(self._object_path, obj_filename, file, self._build_type, flags)
+        if err:
+            self._error = True
+            return
 
         self._should_link = True
         deps = self._get_deps(file, language)
@@ -1209,6 +1235,8 @@ class _BuildDatabase:
     def __init__(self, database_path: str) -> None:
         self._path = database_path
         self._data = _DatabaseFileContents()
+        self._source_lock = threading.Lock()
+        self._object_lock = threading.Lock()
 
 
     def load(self) -> None:
@@ -1225,31 +1253,47 @@ class _BuildDatabase:
 
 
     def query_source(self, filename: str) -> _SourceData:
+        result = None
+
+        self._source_lock.acquire()
         if filename in self._data.sources:
-            return self._data.sources[filename]
-        return None
+            result = self._data.sources[filename]
+        self._source_lock.release()
+
+        return result
     
 
     def update_source(self, filename: str, data: _SourceData) -> None:
+        self._source_lock.acquire()
         self._data.sources[filename] = data
+        self._source_lock.release()
 
 
     def add_object(self, filename: str, build_type: str) -> None:
+        self._object_lock.acquire()
         if build_type not in self._data.objects:
             self._data.objects[build_type] = set()
         self._data.objects[build_type].add(filename)
+        self._object_lock.release()
     
 
     def remove_object(self, filename: str, build_type: str) -> None:
+        self._object_lock.acquire()
         self._data.objects[build_type].remove(filename)
+        self._object_lock.release()
 
 
     def clear_objects(self, build_type: str) -> None:
+        self._object_lock.acquire()
         self._data.objects[build_type].clear()
+        self._object_lock.release()
     
 
     def get_objects(self, build_type: str) -> set[str]:
-        return self._data.objects[build_type]
+        self._object_lock.acquire()
+        result = self._data.objects[build_type]
+        self._object_lock.release()
+        return result
 
     
     def set_link_error(self, status: bool) -> None:

@@ -1,4 +1,4 @@
 #pragma once
  
-void s2(void);
+void s2(void); 
 
